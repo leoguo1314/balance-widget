@@ -1,0 +1,27 @@
+name: Harmony core checks
+on:
+  push:
+    paths:
+      - 'harmony/**'
+      - '.github/workflows/harmony-core.yml'
+  pull_request:
+    paths:
+      - 'harmony/**'
+      - '.github/workflows/harmony-core.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check Harmony project references
+        run: node harmony/tools/check-project.mjs
+      - name: Test parsers, accounting, cards and signing
+        run: node --test harmony/tests/*.test.mjs
+      - name: Check whitespace
+        run: git diff --check

@@ -1,5 +1,7 @@
 # API 管理助手
 
+> **HarmonyOS 7 手机原生移植初版**：[进入 `harmony/` 工程与构建说明](harmony/README.md)。使用 ArkTS、ArkUI 和服务卡片，目标 API 26；业务测试已通过，尚待官方 SDK 编译、签名和真机验证。以下为原 Android 版说明。
+
 **把 16 家 AI 平台的 API 余额，汇总到手机桌面上的一个小组件里。**
 
 纯代码查询 —— **不调用任何 AI 接口，不消耗一分钱 token**。
