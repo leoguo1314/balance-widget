@@ -138,7 +138,10 @@ struct Index {
     try {
       const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker(this.getUIContext().getHostContext() as common.UIAbilityContext);
       const options: picker.DocumentSaveOptions = new picker.DocumentSaveOptions();
-      options.newFileNames = ['API余额统计-' + new Date().toISOString().slice(0, 10) + '.json'];
+      const today: Date = new Date();
+      const date: string = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+      options.newFileNames = ['API余额统计-' + date + '.json'];
       const uris: string[] = await documentPicker.save(options);
       if (uris.length === 0) return;
       const report: string = await this.repository.exportReport();
@@ -195,7 +198,7 @@ struct Index {
           Scroll() {
             Column({ space: 16 }) {
               Text('余额历史').fontSize(22).fontWeight(FontWeight.Bold).width('100%')
-              Select(this.accounts.map((a: Account) => ({ value: a.label }))).value('选择账户')
+              Select(this.accounts.map((a: Account): SelectOption => ({ value: a.label }))).value('选择账户')
                 .onSelect((index: number) => { this.selected = this.accounts[index].id; })
               Select([{ value: '7 天' }, { value: '30 天' }, { value: '90 天' }, { value: '180 天' }])
                 .selected(0).value(this.days + ' 天').onSelect((index: number) => { this.days = [7, 30, 90, 180][index]; })

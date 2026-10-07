@@ -67,7 +67,7 @@ struct EditAccount {
       Scroll() {
         Column({ space: 14 }) {
           Text('选择平台').fontSize(14).width('100%')
-          Select(PRESETS.map((p: Preset) => ({ value: p.name }))).selected(this.presetIndex).value(PRESETS[this.presetIndex].name)
+          Select(PRESETS.map((p: Preset): SelectOption => ({ value: p.name }))).selected(this.presetIndex).value(PRESETS[this.presetIndex].name)
             .onSelect((index: number) => this.switchPreset(index))
           Text(presetFor(this.account.platform).note).fontSize(12).fontColor('#78879B').width('100%')
           TextInput({ text: this.account.label, placeholder: '名称，例如主力项目' }).onChange((v: string) => { this.account.label = v; })

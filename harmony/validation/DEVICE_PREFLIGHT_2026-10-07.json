@@ -1,0 +1,62 @@
+{
+    "schemaVersion":  1,
+    "startedAt":  "2026-10-07T22:44:08.0967430+08:00",
+    "completedAt":  "2026-10-07T22:44:09.2013822+08:00",
+    "status":  "failed",
+    "bundleName":  "com.leoguo.balancewidget",
+    "toolVersion":  "3.2.0f",
+    "device":  {
+                   "apiVersion":  "26",
+                   "model":  "LMR-AL00",
+                   "systemVersion":  "LMR-AL00 7.0.0.109(SP6C00E105R10P5)"
+               },
+    "hap":  null,
+    "installation":  {
+                         "requested":  false,
+                         "status":  "not_requested",
+                         "successTextConfirmed":  false
+                     },
+    "launch":  {
+                   "status":  "not_run",
+                   "successTextConfirmed":  false
+               },
+    "installedBundleConfirmed":  false,
+    "layout":  null,
+    "screenshot":  null,
+    "checks":  [
+                   {
+                       "step":  "hdc_version",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "connected_targets",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_api",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_model",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_system_version",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "installed_bundle",
+                       "nativeExitCode":  0,
+                       "passed":  false
+                   }
+               ],
+    "failure":  {
+                    "step":  "installed_bundle",
+                    "kind":  "device_reported_failure"
+                }
+}

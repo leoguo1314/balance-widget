@@ -9,7 +9,8 @@ export class NetClient {
   async query(account: Account, credential: string): Promise<string> {
     validateAccount(account);
     let url: string = account.endpoint;
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    const headers: Record<string, string> = {};
+    headers['Accept'] = 'application/json';
     if (account.platform === 'dashscope') {
       const key: AliyunCredential = JSON.parse(credential) as AliyunCredential;
       if (!key.id || !key.secret) throw new Error('请配置阿里云 AccessKeyId 与 AccessKeySecret');
@@ -17,7 +18,9 @@ export class NetClient {
     } else if (account.platform === 'mimo') headers['Cookie'] = credential;
     else headers['Authorization'] = 'Bearer ' + credential;
     if (account.platform === 'qiniu') {
-      const today: string = new Date().toISOString().slice(0, 10);
+      const local: Date = new Date();
+      const today: string = local.getFullYear().toString() + '-' + (local.getMonth() + 1).toString().padStart(2, '0') +
+        '-' + local.getDate().toString().padStart(2, '0');
       url += '?start_date=' + today.slice(0, 8) + '01&end_date=' + today;
     }
     const client: http.HttpRequest = http.createHttp();

@@ -4,6 +4,7 @@ param(
     [string]$StudioHome = 'D:\HarmonyosDevTools\DevEco Studio',
     [string]$CommandLineHome = 'D:\HarmonyosDevTools\command-line-tools',
     [string]$SdkHome = '',
+    [switch]$LocalSigning,
     [switch]$CheckOnly
 )
 
@@ -44,6 +45,32 @@ function Invoke-BuildTool {
     & $Executable @ToolArgs 2>&1 | ForEach-Object { Write-BuildLine $_.ToString() }
     $toolExit = $global:LASTEXITCODE
     if ($toolExit -ne 0) { throw ("{0} failed with exit code {1}." -f $Name, $toolExit) }
+}
+
+function Write-HapEvidence {
+    param([System.IO.FileInfo[]]$Haps, [switch]$RequireSigned)
+    if (-not $Haps -or $Haps.Count -eq 0) { throw 'Hvigor returned success but no new HAP was found in entry/build/default/outputs/default.' }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    foreach ($hap in $Haps) {
+        if ($hap.Length -le 0) { throw ('Hvigor returned an empty HAP: ' + $hap.FullName) }
+        $archive = $null
+        try {
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($hap.FullName)
+            foreach ($entryName in @('module.json', 'resources.index', 'ets/modules.abc')) {
+                $entry = $archive.GetEntry($entryName)
+                if (-not $entry -or $entry.Length -le 0) { throw 'Missing native module payload.' }
+            }
+        } catch {
+            throw ('HAP is not a readable native package with module.json, resources.index and compiled ArkTS: ' + $hap.FullName)
+        } finally {
+            if ($archive) { $archive.Dispose() }
+        }
+        $sha256 = (Get-FileHash -LiteralPath $hap.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+        Write-BuildLine ('Generated HAP: {0}; bytes={1}; SHA256={2}' -f $hap.FullName, $hap.Length, $sha256)
+    }
+    if ($RequireSigned -and -not ($Haps | Where-Object { $_.Name -match '-signed\.hap$' })) {
+        throw 'Local signing was requested but no new signed HAP was produced. Check the private DevEco signing setup.'
+    }
 }
 
 $exitCode = 0
@@ -99,6 +126,7 @@ try {
     $env:NODE_HOME = Split-Path -Parent $node
     $env:JAVA_HOME = Split-Path -Parent (Split-Path -Parent $java)
     $env:DEVECO_COMMANDLINE_HOME = $CommandLineHome
+    $env:DEVECO_STUDIO_HOME = $StudioHome
     $env:PATH = (@((Split-Path -Parent $node), (Split-Path -Parent $java), (Split-Path -Parent $ohpm), (Split-Path -Parent $hvigor)) -join ';') + ';' + $env:PATH
     Write-BuildLine ('SDK: ' + $env:DEVECO_SDK_HOME)
     $nodeVersion = & $node --version
@@ -127,16 +155,28 @@ try {
     if ($CheckOnly) {
         Write-BuildLine 'Tool discovery finished. No SDK compilation was performed; Hvigor must still validate API 26.'
     } else {
-        Invoke-BuildTool -Name 'Project references (unsigned source)' -Executable $node -ToolArgs @('tools/check-project.mjs')
+        $checkArgs = @('tools/check-project.mjs')
+        $checkName = 'Project references (unsigned source / strict JSON)'
+        if ($LocalSigning) {
+            $json5Parser = Find-Tool -Candidates @(
+                (Join-Path $CommandLineHome 'hvigor\hvigor-ohos-plugin\node_modules\json5\lib\index.js'),
+                (Join-Path $StudioHome 'tools\hvigor\hvigor-ohos-plugin\node_modules\json5\lib\index.js'),
+                (Join-Path $env:DEVECO_SDK_HOME 'default\openharmony\ets\build-tools\ets-loader\node_modules\json5\lib\index.js')
+            ) -CommandNames @()
+            if (-not $json5Parser) { throw 'Local signing requires the JSON5 parser installed with the official DevEco/Hvigor toolchain.' }
+            $checkArgs += @('--local-signing', '--json5-module', $json5Parser)
+            $checkName = 'Project references (private local signing / JSON5)'
+            Write-BuildLine 'Local signing mode: using private DevEco signing settings. Keep the signing configuration out of Git.'
+        }
+        Invoke-BuildTool -Name $checkName -Executable $node -ToolArgs $checkArgs
         $testFiles = @(Get-ChildItem -LiteralPath (Join-Path $projectDir 'tests') -Filter '*.test.mjs' -File | ForEach-Object { $_.FullName })
         Invoke-BuildTool -Name 'Business logic tests' -Executable $node -ToolArgs (@('--test') + $testFiles)
         Invoke-BuildTool -Name 'Install project dependencies' -Executable $ohpm -ToolArgs @('install')
         $buildStarted = [DateTime]::UtcNow
-        Invoke-BuildTool -Name 'Native SDK assembleHap' -Executable $hvigorExe -ToolArgs ($hvigorPrefix + @('--mode', 'module', '-p', 'product=default', '-p', 'module=entry@default', '-p', 'buildMode=debug', 'assembleHap', '--no-daemon'))
+        Invoke-BuildTool -Name 'Native SDK clean assembleHap' -Executable $hvigorExe -ToolArgs ($hvigorPrefix + @('--mode', 'module', '-p', 'product=default', '-p', 'module=entry@default', '-p', 'buildMode=debug', 'clean', 'assembleHap', '--no-daemon'))
         $outputDir = Join-Path $projectDir 'entry\build\default\outputs\default'
         $haps = @(Get-ChildItem -LiteralPath $outputDir -Filter '*.hap' -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTimeUtc -ge $buildStarted.AddSeconds(-2) })
-        if ($haps.Count -eq 0) { throw 'Hvigor returned success but no new HAP was found in entry/build/default/outputs/default.' }
-        foreach ($hap in $haps) { Write-BuildLine ('Generated HAP: ' + $hap.FullName) }
+        Write-HapEvidence -Haps $haps -RequireSigned:$LocalSigning
         Write-BuildLine 'Native compilation completed. Device installation still requires matching debug signing and device validation.'
     }
 } catch {

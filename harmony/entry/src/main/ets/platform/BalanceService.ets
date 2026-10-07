@@ -69,13 +69,14 @@ export class BalanceService {
     if (!this.repository.state.settings.notifications) return;
     for (const balance of results) {
       const account: Account | undefined = this.repository.state.accounts.find((a: Account) => a.id === balance.accountId);
-      if (!account || !balance.ok || !balance.hasValue || balance.value >= account.threshold || !account.includeInTotal) continue;
+      if (!account || !balance.ok || !balance.hasValue || balance.value >= account.threshold ||
+        ['qiniu', 'modelscope', 'workbuddy'].indexOf(account.platform) >= 0 || account.currency === 'POINT' || balance.currency === 'POINT') continue;
       const last: number = this.repository.state.alerts[account.id] || 0;
       if (Date.now() - last < 86400000) continue;
       try {
         await notificationManager.publish({
           id: 1000 + this.repository.state.accounts.indexOf(account),
-          content: { contentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+          content: { notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
             normal: { title: account.label + ' 余额提醒', text: '当前余额 ' + amount(balance.value, balance.currency) + '，低于设定阈值' } }
         });
         this.repository.state.alerts[account.id] = Date.now();

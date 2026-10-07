@@ -2,7 +2,7 @@
 
 这是上游 BalanceWidget 的 Stage 模型原生移植工程，放在独立的 `harmony/` 目录中。Android Java、RemoteViews、AlarmManager 无法直接编译成此工程的 HAP，手机界面与服务卡片使用 ArkTS/ArkUI 实现。
 
-**当前状态：源码初版，业务逻辑测试通过；尚未经过华为 SDK 编译、签名、模拟器或真机验证。当前没有可安装的 HAP。**
+**当前状态：已在 Windows 本机使用官方 API 26 SDK 完成 ArkTS 编译和未签名 HAP 打包，业务回归 45/45 通过。调试签名与设备实测状态见 [VALIDATION.md](VALIDATION.md)；未签名 HAP 只是中间产物。**
 
 目标为 HarmonyOS 7 / API 26 手机：`compileSdkVersion`、`targetSdkVersion`、`compatibleSdkVersion` 均为 `26.0.0`，工程 `modelVersion` 也为 `26.0.0`。没有承诺旧版本系统兼容性。
 
@@ -95,6 +95,22 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-ha
 ```
 
 每次运行的日志位于 `harmony/build-logs/compile-时间.txt`，已从 Git 排除。初次编译失败时可反馈日志中的工具版本和编译错误，便于修复 ArkTS/SDK 兼容问题。没有原生编译成功日志前，不将工具已安装或 Node 测试成功等同于 HAP 构建通过。签名证书、profile、密码和真实 Key 保留在本机。
+
+默认构建现在执行 `clean assembleHap`，校验本次 HAP 内的配置、资源索引和 ArkTS 字节码，并记录字节数及 SHA-256，避免沿用旧产物。
+
+DevEco 已为当前包名和目标手机生成本人合法调试签名后，可以保留本地 JSON5 签名配置，执行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1 -LocalSigning
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\verify-device.ps1 `
+  -HapPath '.\harmony\entry\build\default\outputs\default\entry-default-signed.hap'
+```
+
+`-LocalSigning` 使用官方 Hvigor 附带的 JSON5 解析器，继续检查 API 26、资源和网络约束，并要求输出新的已签名 HAP。默认源码/CI 检查继续拒绝签名内容。本地 `build-profile.json5` 的签名材料须保存到 Git 排除的本机目录，提交前恢复无签名源码配置；不要把账号密码或完整 profile 放入公共记录。
+
+设备脚本默认要求仅有一台已授权连接的 API 26 设备；多设备时传入实际 `-DeviceId`。它检查安装和启动的真实成功文本、Bundle Manager、可见应用布局及截图，遇到业务失败也返回非零，不把 `hdc` 退出码 0 当作成功。脱敏结果位于 `harmony/build-logs/device-时间/result.json`，截图只保留在本机。不传 `-HapPath` 时只验证已安装的应用。
+
+可编译的独立 `entry_test` 原生测试 Runner 及命令见 [真实设备测试说明](entry/src/ohosTest/README.md)。它在隔离目录使用合成数据验证 ArkTS、AssetStoreKit、SQLite 和 Preferences；只通过 SDK 编译时仍须标记“设备测试未执行”。
 
 ### 业务检查与 Linux/macOS 构建
 

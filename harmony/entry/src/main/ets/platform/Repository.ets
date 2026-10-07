@@ -115,6 +115,9 @@ export class Repository {
       a.id === p.accountId && a.revision === p.revision));
     const data: ReportExport = new ReportExport();
     data.exportedAt = new Date().toISOString(); data.history = records;
+    data.settings.usdCny = this.state.settings.usdCny;
+    data.settings.refreshMinutes = this.state.settings.refreshMinutes;
+    data.settings.notifications = this.state.settings.notifications;
     // 明确只导出统计和非凭证配置；跨设备迁移需要重新输入 Key。
     data.accounts = this.state.accounts.map((a: Account) => {
       const copy: Account = JSON.parse(JSON.stringify(a)) as Account;
@@ -129,5 +132,6 @@ export class ReportExport {
   format: number = 1;
   exportedAt: string = '';
   accounts: Account[] = [];
+  settings: Settings = new Settings();
   history: Snapshot[] = [];
 }
