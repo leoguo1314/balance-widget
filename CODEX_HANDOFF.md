@@ -2,6 +2,8 @@
 
 用户已要求将本任务交给 Codex 执行。请在用户的 **Windows 本机** 使用已安装的华为工具链继续，目标是生成真实的原生 HAP、修复编译错误，并在具备设备和签名条件时完成安装运行验证。
 
+用户已经下载源码 ZIP 并解压到 **`D:\GithubRepo\balance-widget-harmonyos-7`**。这是本地执行目录；原生工程目录为 `D:\GithubRepo\balance-widget-harmonyos-7\harmony`。下载时可能尚未包含本交接文件，可从工作分支获取最新版本。
+
 ## 仓库与当前进度
 
 - 用户 Fork：https://github.com/leoguo1314/balance-widget
@@ -26,7 +28,7 @@
 
 ## 执行步骤
 
-1. 查看 `git status`、分支和远端，读取实际存在的 `AGENTS.md`，以及 `harmony/README.md`、`harmony/VALIDATION.md`。保护用户的本地修改。在 Fork 的 `harmonyos-7` 分支续做；若需要隔离修改，用独立工作目录或 worktree。无需重新 Fork 或新建同样的 PR。
+1. 从上述本地目录开始，检查是否包含 `.git`，读取实际存在的 `AGENTS.md`，以及 `harmony/README.md`、`harmony/VALIDATION.md`。有 Git 元数据时查看 `git status`、分支和远端；ZIP 目录没有 Git 元数据时，安全建立与 Fork 的 `harmonyos-7` 分支关联，或在相邻新目录克隆该分支并迁移用户改动。保护现有文件，不用硬重置覆盖用户内容，不把整份 ZIP 作为无历史新仓库另行发布。若本交接文件缺失，从 `https://raw.githubusercontent.com/leoguo1314/balance-widget/harmonyos-7/CODEX_HANDOFF.md` 获取。在 Fork 的现有分支续做，无需重新 Fork 或新建同样的 PR。
 2. 在仓库根目录检查工具，并记录实际版本：
 
    ```powershell
@@ -55,4 +57,4 @@
 
 ## 给本地 Codex 的启动指令
 
-> 读取仓库根目录的 CODEX_HANDOFF.md，使用我的 Windows 本机鸿蒙工具链继续执行。自主完成真实 SDK 编译、错误修复、HAP 打包，并在本机签名与设备可用时完成安装运行验证。把源码和验证记录推送到现有 harmonyos-7 分支，交付真实产物路径与实测结果。
+> 以 D:\GithubRepo\balance-widget-harmonyos-7 为本地工作目录，读取 CODEX_HANDOFF.md（缺失则从 Fork 的 harmonyos-7 分支获取），使用我的 Windows 本机鸿蒙工具链继续执行。自主完成真实 SDK 编译、错误修复、HAP 打包，并在本机签名与设备可用时完成安装运行验证。把源码和验证记录推送到现有 harmonyos-7 分支，交付真实产物路径与实测结果。
