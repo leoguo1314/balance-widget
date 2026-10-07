@@ -14,6 +14,14 @@
 
 测试使用合成 JSON 与测试字符串，不包含真实凭证，不会调用聊天接口。
 
+## Windows 本地构建准备
+
+用户已提供 DevEco Studio、Command Line Tools、DevEco Testing 的本机安装目录。已增加 `tools/build-hap.ps1`，默认匹配 Studio 与 Command Line Tools 的路径，记录工具版本、SDK 信息、检查结果与原生构建日志。Testing 留待设备测试阶段。资源检查改用跨平台 `basename`；扫描排除依赖、缓存与构建目录，避免重复构建时把生成文件当成源码。CI 增加 Windows 执行平台，以及 Windows PowerShell 语法、原生命令输出和错误退出码传播检查。
+
+Linux 本环境使用 PowerShell 7.6.6 解析脚本并检查工具查找、标准输出/错误日志、成功退出码和非零退出码；均通过。这些只验证脚本包装行为，没有调用鸿蒙 SDK。
+
+当前会话运行在 Linux 环境，无法访问用户 Windows D 盘。**本机工具包版本、SDK API 26 编译、签名与设备运行结果仍待实际日志确认**；新增脚本和 CI 语法检查均不能证明 SDK 编译通过。
+
 ## 尚未执行，安装前必须补做
 
 - 官方 HarmonyOS 26.0.0 SDK 编译 `.ets`、资源与 HAP 打包；不得以 Node 测试代替。

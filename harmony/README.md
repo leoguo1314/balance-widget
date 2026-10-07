@@ -61,6 +61,43 @@
 
 ## 命令行验证与构建
 
+### Windows（已安装本地工具）
+
+`tools/build-hap.ps1` 默认使用以下安装路径；脚本只设置本次进程的环境变量，不修改 Windows 系统设置：
+
+| 工具 | 默认目录 | 用途 |
+| --- | --- | --- |
+| DevEco Studio | `D:\HarmonyosDevTools\DevEco Studio` | 内置 Node.js/Java/Hvigor 与 SDK 的备选来源；调试签名与运行 |
+| Command Line Tools | `D:\HarmonyosDevTools\command-line-tools` | Hvigor、ohpm 与 SDK |
+| DevEco Testing | `D:\HarmonyosDevTools\DevEco Testing` | 后续设备测试；首次 HAP 编译不依赖此工具 |
+
+在 **Windows PowerShell** 中进入本仓库根目录，先检查本机工具路径、版本与 SDK：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1 -CheckOnly
+```
+
+确认开发套件对应 **26.0.0 / API 26、Node.js 24** 后，执行首次未签名编译：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1
+```
+
+`-ExecutionPolicy Bypass` 只对这个 PowerShell 进程生效。脚本优先寻找已安装的官方工具，再尝试 PATH；支持带空格的路径、Studio 内置 `hvigorw.js` 和显式 SDK 路径。它先执行源码/业务检查与 `ohpm install`，再运行官方 `assembleHap`，遇到失败立即返回非零退出码。只有 Hvigor 成功且输出目录出现本次生成的 HAP 才报告编译完成。默认脚本用于未配置签名的源码；在 IDE 配置本人调试签名后，使用 IDE 构建、安装。
+
+若两个工具包版本不同，或 SDK 在其他位置，可指定与 API 26 配套的实际路径：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1 `
+  -StudioHome 'D:\HarmonyosDevTools\DevEco Studio' `
+  -CommandLineHome 'D:\HarmonyosDevTools\command-line-tools' `
+  -SdkHome 'D:\HarmonyosDevTools\DevEco Studio\sdk'
+```
+
+每次运行的日志位于 `harmony/build-logs/compile-时间.txt`，已从 Git 排除。初次编译失败时可反馈日志中的工具版本和编译错误，便于修复 ArkTS/SDK 兼容问题。没有原生编译成功日志前，不将工具已安装或 Node 测试成功等同于 HAP 构建通过。签名证书、profile、密码和真实 Key 保留在本机。
+
+### 业务检查与 Linux/macOS 构建
+
 业务检查只依赖 Node.js 24，不需要向测试提供任何真实 API Key：
 
 ```bash
@@ -79,7 +116,7 @@ bash harmony/tools/build-hap.sh
 
 也可设置 `HVIGORW` 指向官方可执行文件。脚本检查工具存在后执行 `assembleHap`；缺少工具时以退出码 2 结束，不产生假安装包。产物通常在 `entry/build/default/outputs/default/`；真机安装仍需签名。
 
-GitHub Actions 的 `Harmony core checks` 仅运行项目结构与逻辑测试。它**不声称**编译 HAP；官方 SDK、签名和真机回归需要另外执行。
+GitHub Actions 的 `Harmony core checks` 在 Linux/Windows 上运行项目结构与逻辑测试，Windows 额外使用 Windows PowerShell 检查构建脚本语法、原生命令输出和错误退出码传播。它**不声称**编译 HAP；官方 SDK、签名和真机回归需要另外执行。
 
 ## 与 Android 版的差异
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -8,10 +8,12 @@ const main = join(root, 'entry/src/main');
 const read = path => readFileSync(join(root, path), 'utf8');
 const json = path => JSON.parse(read(path));
 function files(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    const path = join(directory, entry.name);
-    return entry.isDirectory() ? files(path) : [path];
-  });
+  return readdirSync(directory, { withFileTypes: true })
+    .filter(entry => !entry.isDirectory() || !['.hvigor', 'oh_modules', 'node_modules', 'build', 'build-logs'].includes(entry.name))
+    .flatMap(entry => {
+      const path = join(directory, entry.name);
+      return entry.isDirectory() ? files(path) : [path];
+    });
 }
 
 for (const file of files(root).filter(p => ['.json', '.json5'].includes(extname(p)))) JSON.parse(readFileSync(file, 'utf8'));
@@ -47,8 +49,8 @@ for (const [kind, key, listKey] of [['string', 'string', 'string'], ['color', 'c
   const local = json(`entry/src/main/resources/base/element/${key}.json`);
   resources.set(kind, new Set([...scope[listKey], ...local[listKey]].map(e => e.name)));
 }
-resources.set('media', new Set(files(join(root, 'AppScope/resources/base/media')).map(p => p.split('/').pop().split('.')[0])));
-resources.set('profile', new Set(files(join(main, 'resources/base/profile')).map(p => p.split('/').pop().split('.')[0])));
+resources.set('media', new Set(files(join(root, 'AppScope/resources/base/media')).map(p => basename(p, extname(p)))));
+resources.set('profile', new Set(files(join(main, 'resources/base/profile')).map(p => basename(p, extname(p)))));
 for (const file of files(root).filter(p => ['.json', '.json5'].includes(extname(p)))) {
   for (const match of readFileSync(file, 'utf8').matchAll(/\$(string|color|media|profile):([A-Za-z0-9_]+)/g)) {
     assert.ok(resources.get(match[1]).has(match[2]), `${file}: missing ${match[0]}`);
