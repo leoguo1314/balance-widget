@@ -54,4 +54,7 @@ jobs:
             Invoke-BuildTool -Name 'Native failure' -Executable $nativeCommand -ToolArgs @('23')
           } catch { $failureConfirmed = $_.Exception.Message -like '*exit code 23*' }
           if (-not $failureConfirmed) { throw 'Native build failures must stop the wrapper.' }
+          # GitHub's PowerShell shell appends exit $LASTEXITCODE. The nonzero
+          # exit above is expected and has already been checked.
+          $global:LASTEXITCODE = 0
           Write-Host 'PowerShell syntax and native exit handling passed. This is not an SDK build.'
