@@ -1,0 +1,104 @@
+{
+    "schemaVersion":  1,
+    "startedAt":  "2026-10-08T23:08:57.4807320+08:00",
+    "completedAt":  "2026-10-08T23:09:03.7874780+08:00",
+    "status":  "passed",
+    "bundleName":  "com.leoguo.balancewidget",
+    "toolVersion":  "3.2.0f",
+    "device":  {
+                   "apiVersion":  "26",
+                   "model":  "LMR-AL00",
+                   "systemVersion":  "LMR-AL00 7.0.0.109(SP6C00E105R10P5)"
+               },
+    "hap":  {
+                "fileName":  "entry-default-signed.hap",
+                "bytes":  397617,
+                "sha256":  "e89234c8d6f80255684d6578050569513ebde2a46d79a673f29cd869f36b6e59"
+            },
+    "installation":  {
+                         "requested":  true,
+                         "status":  "passed",
+                         "successTextConfirmed":  true
+                     },
+    "launch":  {
+                   "status":  "passed",
+                   "successTextConfirmed":  true
+               },
+    "installedBundleConfirmed":  true,
+    "layout":  {
+                   "file":  "layout-evidence.json",
+                   "nodeCount":  33,
+                   "titleVisible":  true,
+                   "bundleFilterRequested":  true,
+                   "matchingBundleAttribute":  true,
+                   "otherBundleAttribute":  false
+               },
+    "screenshot":  {
+                       "file":  "application.png",
+                       "bytes":  255500,
+                       "sha256":  "c07aa291ea400e48738a38e7f9989122c56a354e57faeaf02534f94963e25d49"
+                   },
+    "checks":  [
+                   {
+                       "step":  "hdc_version",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "connected_targets",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_api",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_model",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "device_system_version",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "install_hap",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "installed_bundle",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "start_ability",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "application_layout_dump",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "application_layout_receive",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "application_screenshot",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   },
+                   {
+                       "step":  "application_screenshot_receive",
+                       "nativeExitCode":  0,
+                       "passed":  true
+                   }
+               ],
+    "failure":  null
+}

@@ -29,9 +29,10 @@ export class Repository {
   vault: Vault = new Vault();
   history: HistoryStore;
   state: LocalState;
-  constructor(context: common.Context) {
-    this.prefs = preferences.getPreferencesSync(context, { name: 'balance-harmony' });
-    this.history = new HistoryStore(context);
+  constructor(context: common.Context, preferencesName: string = 'balance-harmony',
+    historyDatabaseName: string = 'balance-history.db') {
+    this.prefs = preferences.getPreferencesSync(context, { name: preferencesName });
+    this.history = new HistoryStore(context, historyDatabaseName);
     const raw: string = this.prefs.getSync('state', '') as string;
     this.state = raw ? JSON.parse(raw) as LocalState : new LocalState();
     if (this.state.version !== 1 || !Array.isArray(this.state.accounts) || !Array.isArray(this.state.balances)) {

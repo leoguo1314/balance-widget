@@ -24,8 +24,8 @@ jobs:
           node-version: '24'
       - name: Check Harmony project references
         run: node harmony/tools/check-project.mjs
-      - name: Test parsers, accounting, cards and signing
-        run: node --test harmony/tests/*.test.mjs
+      - name: Test parsers, accounting, cards, signing and HTTP fixture
+        run: node --test harmony/tests/*.test.mjs harmony/tools/device-fixture-server.test.mjs
       - name: Check whitespace
         run: git diff --check
       - name: Check Windows PowerShell syntax and native failure propagation

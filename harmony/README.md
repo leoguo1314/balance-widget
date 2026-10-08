@@ -2,7 +2,9 @@
 
 这是上游 BalanceWidget 的 Stage 模型原生移植工程，放在独立的 `harmony/` 目录中。Android Java、RemoteViews、AlarmManager 无法直接编译成此工程的 HAP，手机界面与服务卡片使用 ArkTS/ArkUI 实现。
 
-**当前状态：已在 Windows 本机使用官方 API 26 SDK 完成 ArkTS 编译和未签名 HAP 打包，业务回归 45/45 通过。调试签名与设备实测状态见 [VALIDATION.md](VALIDATION.md)；未签名 HAP 只是中间产物。**
+**截至 2026-10-08：已使用本机官方 API 26 SDK 完成调试签名 HAP 的干净构建，并在 API 26 手机上完成安装、启动、应用布局及截图验证。Node 检查 65/65 通过；真机存储原生测试五项、手机 HTTP 合成余额测试五项均通过。详细证据与未验证范围见 [VALIDATION.md](VALIDATION.md)。**
+
+最终交付使用更新后的 DevEco Studio 26.0.0.851、Hvigor 6.26.8、Node.js 24.14.1、JBR 25.0.2 和 API 26 / ETS 26.0.0.105。实际 SDK 根为 `D:\HarmonyosDevTools\DevEco Studio\sdk`。主签名 HAP 为 397617 字节，SHA-256 `e89234c8d6f80255684d6578050569513ebde2a46d79a673f29cd869f36b6e59`；测试签名 HAP 为 255109 字节，两个包均通过官方签名验证及真机安装执行。
 
 目标为 HarmonyOS 7 / API 26 手机：`compileSdkVersion`、`targetSdkVersion`、`compatibleSdkVersion` 均为 `26.0.0`，工程 `modelVersion` 也为 `26.0.0`。没有承诺旧版本系统兼容性。
 
@@ -57,7 +59,7 @@
 5. 在 Project Structure → Signing Configs 中配置本人华为开发者账号和调试签名。签名证书、私钥、profile 和密码都保存在本机，不提交到仓库。
 6. 连接 HarmonyOS 7 手机或 API 26 模拟器，运行 `entry`。仅使用已经签名且与设备调试 profile 相符的 HAP 安装。
 
-本仓库没有包含签名配置和证书，也未申请 AppGallery 上架或开放特殊系统权限。
+本仓库没有包含签名配置和证书。本机已通过本人华为账号为本项目生成调试签名；公开源码与本机签名通过 [本地签名隔离工具](tools/LOCAL_SIGNING.md) 分开保存。没有申请 AppGallery 上架或开放特殊系统权限。
 
 ## 命令行验证与构建
 
@@ -83,7 +85,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-ha
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1
 ```
 
-`-ExecutionPolicy Bypass` 只对这个 PowerShell 进程生效。脚本优先寻找已安装的官方工具，再尝试 PATH；支持带空格的路径、Studio 内置 `hvigorw.js` 和显式 SDK 路径。它先执行源码/业务检查与 `ohpm install`，再运行官方 `assembleHap`，遇到失败立即返回非零退出码。只有 Hvigor 成功且输出目录出现本次生成的 HAP 才报告编译完成。默认脚本用于未配置签名的源码；在 IDE 配置本人调试签名后，使用 IDE 构建、安装。
+`-ExecutionPolicy Bypass` 只对这个 PowerShell 进程生效。脚本优先寻找已安装的官方工具，再尝试 PATH；支持带空格的路径、Studio 内置 `hvigorw.js` 和显式 SDK 路径。它先执行源码/业务检查与 `ohpm install`，再运行官方 `clean assembleHap`，遇到失败立即返回非零退出码。只有 Hvigor 成功且输出目录出现本次生成的 HAP 才报告编译完成。默认脚本用于未配置签名的公开源码；使用本人本地调试签名时加上 `-LocalSigning`。
 
 若两个工具包版本不同，或 SDK 在其他位置，可指定与 API 26 配套的实际路径：
 
@@ -101,16 +103,19 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-ha
 DevEco 已为当前包名和目标手机生成本人合法调试签名后，可以保留本地 JSON5 签名配置，执行：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1 -LocalSigning
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\build-hap.ps1 `
+  -LocalSigning -SdkHome 'D:\HarmonyosDevTools\DevEco Studio\sdk'
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\verify-device.ps1 `
   -HapPath '.\harmony\entry\build\default\outputs\default\entry-default-signed.hap'
 ```
 
-`-LocalSigning` 使用官方 Hvigor 附带的 JSON5 解析器，继续检查 API 26、资源和网络约束，并要求输出新的已签名 HAP。默认源码/CI 检查继续拒绝签名内容。本地 `build-profile.json5` 的签名材料须保存到 Git 排除的本机目录，提交前恢复无签名源码配置；不要把账号密码或完整 profile 放入公共记录。
+`-LocalSigning` 使用官方 Hvigor 附带的 JSON5 解析器，继续检查 API 26、资源和网络约束，并要求输出新的已签名 HAP。默认源码/CI 检查继续拒绝签名内容。`tools/local-signing.mjs` 的 `save` 将签名备份到被 Git 忽略的本机目录，`public` 生成可提交的无签名配置，`apply` 恢复本地调试配置，`check` 检查 Git 暂存区未包含签名材料。完整操作顺序见 [LOCAL_SIGNING.md](tools/LOCAL_SIGNING.md)；不要把账号密码或完整 profile 放入公共记录。
 
 设备脚本默认要求仅有一台已授权连接的 API 26 设备；多设备时传入实际 `-DeviceId`。它检查安装和启动的真实成功文本、Bundle Manager、可见应用布局及截图，遇到业务失败也返回非零，不把 `hdc` 退出码 0 当作成功。脱敏结果位于 `harmony/build-logs/device-时间/result.json`，截图只保留在本机。不传 `-HapPath` 时只验证已安装的应用。
 
-可编译的独立 `entry_test` 原生测试 Runner 及命令见 [真实设备测试说明](entry/src/ohosTest/README.md)。它在隔离目录使用合成数据验证 ArkTS、AssetStoreKit、SQLite 和 Preferences；只通过 SDK 编译时仍须标记“设备测试未执行”。
+独立 `entry_test` 原生测试 Runner 及命令见 [真实设备测试说明](entry/src/ohosTest/README.md)。它使用 `delegator.getAppContext().getApplicationContext()` 获取标准 Stage ApplicationContext，并用显式 UUID 数据库/偏好名称隔离合成测试数据。2026-10-08 真机重测的 `CoreParsingAndGrouping`、`VaultUnicodeRoundTrip`、`ContextReady`、`HistoryPersistence`、`RepositoryLifecycle` 全部通过，最终 `PASS NativeDeviceSuite` / 结果码 0。该结果验证合成数据的存储和账户生命周期，实际平台网络、桌面卡片、通知与 MiMo 仍需分别验收。
+
+本机 [合成余额 HTTP 服务](tools/device-fixture-server.README.md) 的 5/5 HTTP 用例通过；包含诊断补丁的最终测试包也已签名安装，手机经 HDC 反向端口转发访问该服务的五项原生测试全部通过，覆盖成功查询与历史、503 保留持久化缓存、恢复与采样、超时保留缓存和自身测试账户、资产、历史行清理。隔离 UUID 对应的空存储文件可能保留。测试使用虚构凭证，不证明真实平台余额正确。
 
 ### 业务检查与 Linux/macOS 构建
 
@@ -118,7 +123,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\harmony\tools\verify-d
 
 ```bash
 node harmony/tools/check-project.mjs
-node --test harmony/tests/*.test.mjs
+node --test harmony/tests/*.test.mjs harmony/tools/device-fixture-server.test.mjs
 ```
 
 使用官方 Command Line Tools 26.0.0 构建的示例（路径替换为实际安装位置）：

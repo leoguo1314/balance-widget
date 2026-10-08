@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-08T23:12:24.3135379+08:00",
+  "status": "passed",
+  "bundleName": "com.leoguo.balancewidget",
+  "toolchain": {
+    "studio": "26.0.0.851",
+    "hvigor": "6.26.8",
+    "java": "25.0.2",
+    "node": "24.14.1",
+    "sdkApi": 26,
+    "ets": "26.0.0.105"
+  },
+  "mainHap": {
+    "fileName": "entry-default-signed.hap",
+    "bytes": 397617,
+    "sha256": "e89234c8d6f80255684d6578050569513ebde2a46d79a673f29cd869f36b6e59",
+    "officialSignatureVerified": true,
+    "profileVerified": true,
+    "installationAndVisibleUIResult": "SIGNED_DEVICE_RESULT_2026-10-08.json"
+  },
+  "testHap": {
+    "fileName": "entry-ohosTest-signed.hap",
+    "bytes": 255109,
+    "sha256": "590b1cfca3905fd1855563fa764b4bb7ff0310ba7a3cbee926d4ee45c00aa3a6",
+    "officialSignatureVerified": true,
+    "installationConfirmed": true
+  },
+  "nativeStorage": {
+    "resultCode": 0,
+    "resultMessage": "PASS NativeDeviceSuite",
+    "cases": [
+      {
+        "name": "CoreParsingAndGrouping",
+        "status": "passed"
+      },
+      {
+        "name": "VaultUnicodeRoundTrip",
+        "status": "passed"
+      },
+      {
+        "name": "ContextReady",
+        "status": "passed"
+      },
+      {
+        "name": "HistoryPersistence",
+        "status": "passed"
+      },
+      {
+        "name": "RepositoryLifecycle",
+        "status": "passed"
+      }
+    ],
+    "localLog": "harmony/build-logs/native-delivery-storage-run-20261008.txt"
+  },
+  "nativeHttp": {
+    "resultCode": 0,
+    "resultMessage": "PASS FixtureHttpTestSuite",
+    "cases": [
+      {
+        "name": "FixtureHttpSuccessAndHistory",
+        "status": "passed"
+      },
+      {
+        "name": "FixtureHttp503RetainsPersistedCache",
+        "status": "passed"
+      },
+      {
+        "name": "FixtureHttpRecoveryAndSampling",
+        "status": "passed"
+      },
+      {
+        "name": "FixtureHttpTimeoutRetainsPersistedCache",
+        "status": "passed"
+      },
+      {
+        "name": "FixtureHttpOwnedDataCleanup",
+        "status": "passed"
+      }
+    ],
+    "hostBalanceRequests": 4,
+    "hostControlUpdates": 5,
+    "fixtureDefaultsRestored": true,
+    "localLog": "harmony/build-logs/native-delivery-http-run-20261008.txt"
+  },
+  "cleanup": {
+    "ownedTestAccountAssetsAndHistoryRemoved": true,
+    "taskReversePortRemoved": true,
+    "ownedFixtureServerStopped": true,
+    "emptyUuidDataFilesMayRemain": true
+  },
+  "nodeTests": {
+    "passed": 65,
+    "failed": 0,
+    "skipped": 0,
+    "localLog": "harmony/build-logs/node-post-update-tests-20261008.txt"
+  },
+  "pending": [
+    "Visible UI account add/edit/delete and error cache presentation",
+    "Desktop card add/page/refresh",
+    "Notification authorization and delivery",
+    "MiMo login",
+    "External provider balance against official console"
+  ]
+}

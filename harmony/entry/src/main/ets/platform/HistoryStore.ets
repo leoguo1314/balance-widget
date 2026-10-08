@@ -6,7 +6,11 @@ export class HistoryStore {
   private database: relationalStore.RdbStore | undefined = undefined;
   private opening: Promise<relationalStore.RdbStore> | undefined = undefined;
   private context: common.Context;
-  constructor(context: common.Context) { this.context = context; }
+  private databaseName: string;
+  constructor(context: common.Context, databaseName: string = 'balance-history.db') {
+    this.context = context;
+    this.databaseName = databaseName;
+  }
 
   private async db(): Promise<relationalStore.RdbStore> {
     if (this.database) return this.database;
@@ -16,7 +20,7 @@ export class HistoryStore {
 
   private async open(): Promise<relationalStore.RdbStore> {
     const database: relationalStore.RdbStore = await relationalStore.getRdbStore(this.context,
-      { name: 'balance-history.db', securityLevel: relationalStore.SecurityLevel.S2 });
+      { name: this.databaseName, securityLevel: relationalStore.SecurityLevel.S2 });
     await database.executeSql('CREATE TABLE IF NOT EXISTS snapshots (account_id TEXT NOT NULL, amount REAL NOT NULL, currency TEXT NOT NULL, at INTEGER NOT NULL, revision INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(account_id,revision,at))');
     this.database = database;
     return database;
