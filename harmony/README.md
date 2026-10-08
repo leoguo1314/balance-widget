@@ -4,7 +4,9 @@
 
 **截至 2026-10-08：已使用本机官方 API 26 SDK 完成调试签名 HAP 的干净构建，并在 API 26 手机上完成安装、启动、应用布局及截图验证。Node 检查 65/65 通过；真机存储原生测试五项、手机 HTTP 合成余额测试五项均通过。详细证据与未验证范围见 [VALIDATION.md](VALIDATION.md)。**
 
-最终交付使用更新后的 DevEco Studio 26.0.0.851、Hvigor 6.26.8、Node.js 24.14.1、JBR 25.0.2 和 API 26 / ETS 26.0.0.105。实际 SDK 根为 `D:\HarmonyosDevTools\DevEco Studio\sdk`。主签名 HAP 为 397617 字节，SHA-256 `e89234c8d6f80255684d6578050569513ebde2a46d79a673f29cd869f36b6e59`；测试签名 HAP 为 255109 字节，两个包均通过官方签名验证及真机安装执行。
+最新交付使用更新后的 DevEco Studio 26.0.0.851、Hvigor 6.26.8、Node.js 24.14.1、JBR 25.0.2 和 API 26 / ETS 26.0.0.105。实际 SDK 根为 `D:\HarmonyosDevTools\DevEco Studio\sdk`。修复小数输入及导航自动刷新后的主签名 HAP 为 399643 字节，SHA-256 `fa6603bc06129287a233be2c32cac8aa71f4bd8698207a5c0897aee1faf90e51`，已通过官方签名校验、真机安装和页面测试。此前通过原生存储/网络套件的基线测试 HAP 为 255109 字节；历史记录与本次 UI 结果分别见 [基线验证](validation/SIGNED_DEVICE_2026-10-08.md) 和 [小数与自动刷新验证](validation/DECIMAL_AUTO_REFRESH_2026-10-08.md)。
+
+打开应用、从后台返回、从账户编辑页返回以及切换“余额 / 统计 / 设置”时自动查询；再次点击当前导航也可刷新。停留在主页面时默认每 5 分钟自动查询，刷新间隔可选调整，无需手工设置后才能使用。查询进行中会复用当前结果，后台和账户编辑页不启动主页面的定时查询。美元折算率支持小数，必须点击“保存设置”后生效；余额刷新不会覆盖尚未保存的汇率和间隔输入。
 
 目标为 HarmonyOS 7 / API 26 手机：`compileSdkVersion`、`targetSdkVersion`、`compatibleSdkVersion` 均为 `26.0.0`，工程 `modelVersion` 也为 `26.0.0`。没有承诺旧版本系统兼容性。
 

@@ -23,11 +23,13 @@ struct Index {
   private repository: Repository | undefined = undefined;
   private service: BalanceService | undefined = undefined;
   private timer: number = -1;
+  private pageVisible: boolean = false;
+  private activeTab: number = 0;
 
   aboutToAppear(): void { this.load(); }
-  onPageShow(): void { this.load(); }
-  onPageHide(): void { this.stopTimer(); }
-  aboutToDisappear(): void { this.stopTimer(); }
+  onPageShow(): void { this.pageVisible = true; this.load(); this.refresh(); }
+  onPageHide(): void { this.pageVisible = false; this.stopTimer(); }
+  aboutToDisappear(): void { this.pageVisible = false; this.stopTimer(); }
 
   private load(): void {
     try {
@@ -37,41 +39,48 @@ struct Index {
       this.repository.history.all().then((points: Snapshot[]) => { this.history = points; })
         .catch(() => { this.message = '历史记录读取失败，请重试'; });
       if (!this.selected && this.accounts.length > 0) this.selected = this.accounts[0].id;
-      if (this.refreshSerial > 0) { AppStorage.setOrCreate('refreshSerial', 0); this.refresh(); }
+      if (this.pageVisible && this.refreshSerial > 0) { AppStorage.setOrCreate('refreshSerial', 0); this.refresh(); }
     } catch (_) { this.message = '本地数据加载失败，请保留数据并重启应用'; }
   }
 
-  private syncState(): void {
+  private syncState(readSettings: boolean = true): void {
     if (!this.repository) return;
     this.accounts = this.repository.state.accounts.slice();
     this.balances = this.repository.state.balances.slice();
-    this.rate = String(this.repository.state.settings.usdCny);
-    this.interval = String(this.repository.state.settings.refreshMinutes);
+    if (readSettings) {
+      this.rate = String(this.repository.state.settings.usdCny);
+      this.interval = String(this.repository.state.settings.refreshMinutes);
+    }
   }
 
   private stopTimer(): void { if (this.timer >= 0) clearInterval(this.timer); this.timer = -1; }
   private startTimer(): void {
     this.stopTimer();
-    if (!this.foreground || !this.repository) return;
+    if (!this.foreground || !this.pageVisible || !this.repository) return;
     this.timer = setInterval(() => this.refresh(), this.repository.state.settings.refreshMinutes * 60000);
   }
-  visibilityChanged(): void { if (this.foreground) this.startTimer(); else this.stopTimer(); }
+  visibilityChanged(): void {
+    if (this.foreground && this.pageVisible) { this.startTimer(); this.refresh(); }
+    else this.stopTimer();
+  }
   refreshRequested(): void {
-    if (this.service && this.refreshSerial > 0) { AppStorage.setOrCreate('refreshSerial', 0); this.refresh(); }
+    if (this.pageVisible && this.foreground && this.service && this.refreshSerial > 0) {
+      AppStorage.setOrCreate('refreshSerial', 0); this.refresh();
+    }
   }
 
   private async refresh(): Promise<void> {
-    if (this.busy || !this.service || !this.repository) return;
+    if (this.busy || !this.foreground || !this.pageVisible || !this.service || !this.repository) return;
     this.busy = true; this.message = '';
     try {
-      await this.service.refresh(); this.syncState();
+      await this.service.refresh(); this.syncState(false);
       this.history = await this.repository.history.all();
     } catch (_) { this.message = '刷新未完成，请重试；原有余额保留'; }
     finally { this.busy = false; }
   }
 
   private total(): Summary {
-    return summarize(this.accounts, this.balances, Number(this.rate) > 0 ? Number(this.rate) : 7.2);
+    return summarize(this.accounts, this.balances, this.repository?.state.settings.usdCny || 7.2);
   }
   private balanceOf(id: string): Balance | undefined {
     const account: Account | undefined = this.accounts.find((a: Account) => a.id === id);
@@ -186,7 +195,7 @@ struct Index {
                 Text('余额汇总 · 人民币').fontSize(14).fontColor('#61738E')
                 Text(this.total().values > 0 ? amount(this.total().cny, 'CNY') : '—').fontSize(40).fontWeight(FontWeight.Bold).fontColor('#244B91')
                 Text(this.total().cached + ' 项缓存 · ' + this.total().missing + ' 项待查询').fontSize(12).fontColor('#61738E')
-                Text('美元按设置中的折算率估算：' + this.rate).fontSize(11).fontColor('#8491A4')
+                Text('美元按设置中的折算率估算：' + (this.repository?.state.settings.usdCny || 7.2)).fontSize(11).fontColor('#8491A4')
               }.padding(24).backgroundColor('#E6EFFD').borderRadius(24).width('100%')
               ForEach(this.accounts, (account: Account) => { this.accountCard(account) }, (account: Account) => account.id)
               Button('添加平台 / Key').width('100%').height(48).onClick(() => this.edit())
@@ -226,11 +235,12 @@ struct Index {
           Scroll() {
             Column({ space: 16 }) {
               Text('刷新与折算').fontSize(22).fontWeight(FontWeight.Bold).width('100%')
-              Text('前台刷新间隔（分钟）').width('100%').fontSize(14)
-              TextInput({ text: this.interval }).type(InputType.Number).onChange((value: string) => { this.interval = value; })
+              Text('打开应用、返回前台和切换导航时自动刷新；停留页面时按下方间隔定时刷新，也可随时手动刷新。').fontSize(13).fontColor('#61738E')
+              Text('前台自动刷新间隔（分钟，可选调整）').width('100%').fontSize(14)
+              TextInput({ text: this.interval }).id('foreground-refresh-minutes').type(InputType.Number).onChange((value: string) => { this.interval = value; })
               Text('美元折算人民币（手动设置）').width('100%').fontSize(14)
-              TextInput({ text: this.rate }).type(InputType.Number).onChange((value: string) => { this.rate = value; })
-              Button('保存设置').width('100%').onClick(() => this.saveSettings())
+              TextInput({ text: this.rate }).id('usd-cny-rate').type(InputType.NUMBER_DECIMAL).onChange((value: string) => { this.rate = value; })
+              Button('保存设置').id('save-refresh-settings').width('100%').onClick(() => this.saveSettings())
               Button('开启低余额通知').width('100%').onClick(() => this.notifications())
               Button('导出统计与配置').width('100%').onClick(() => this.exportHistory())
               Text('桌面服务卡片').fontSize(22).fontWeight(FontWeight.Bold).width('100%')
@@ -244,6 +254,8 @@ struct Index {
           }.width('100%').height('100%')
         }.tabBar('设置')
       }.layoutWeight(1).width('100%')
+        .onChange((index: number) => { this.activeTab = index; this.refresh(); })
+        .onTabBarClick((index: number) => { if (index === this.activeTab) this.refresh(); })
     }.width('100%').height('100%').backgroundColor('#F3F6FA')
       .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
   }
