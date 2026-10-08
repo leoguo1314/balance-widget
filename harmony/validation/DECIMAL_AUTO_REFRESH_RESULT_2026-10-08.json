@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "date": "2026-10-08",
+  "hap": {
+    "path": "D:\\GithubRepo\\balance-widget-harmonyos-7\\harmony\\entry\\build\\default\\outputs\\default\\entry-default-signed.hap",
+    "bytes": 399643,
+    "sha256": "fa6603bc06129287a233be2c32cac8aa71f4bd8698207a5c0897aee1faf90e51",
+    "officialSignatureVerified": true
+  },
+  "build": {
+    "log": "harmony/build-logs/compile-20261008-232628-688.txt",
+    "durationSeconds": 152.747,
+    "totalTasks": 34,
+    "executedTasks": 34,
+    "upToDateTasks": 0,
+    "sdkApi": 26,
+    "etsVersion": "26.0.0.105",
+    "hvigor": "6.26.8"
+  },
+  "installationAndLaunch": {
+    "schemaVersion": 1,
+    "startedAt": "2026-10-08T23:31:54.8864191+08:00",
+    "completedAt": "2026-10-08T23:32:01.7075328+08:00",
+    "status": "passed",
+    "bundleName": "com.leoguo.balancewidget",
+    "toolVersion": "3.2.0f",
+    "device": {
+      "apiVersion": "26",
+      "model": "LMR-AL00",
+      "systemVersion": "LMR-AL00 7.0.0.109(SP6C00E105R10P5)"
+    },
+    "hap": {
+      "fileName": "entry-default-signed.hap",
+      "bytes": 399643,
+      "sha256": "fa6603bc06129287a233be2c32cac8aa71f4bd8698207a5c0897aee1faf90e51"
+    },
+    "installation": {
+      "requested": true,
+      "status": "passed",
+      "successTextConfirmed": true
+    },
+    "launch": {
+      "status": "passed",
+      "successTextConfirmed": true
+    },
+    "installedBundleConfirmed": true,
+    "layout": {
+      "file": "layout-evidence.json",
+      "nodeCount": 33,
+      "titleVisible": true,
+      "bundleFilterRequested": true,
+      "matchingBundleAttribute": true,
+      "otherBundleAttribute": false
+    },
+    "screenshot": {
+      "file": "application.png",
+      "bytes": 255633,
+      "sha256": "342f0672c617569dfb3a0482e9fae6c39d57aef4a0c100efc306221f98743cee"
+    },
+    "checks": [
+      {
+        "step": "hdc_version",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "connected_targets",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "device_api",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "device_model",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "device_system_version",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "install_hap",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "installed_bundle",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "start_ability",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "application_layout_dump",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "application_layout_receive",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "application_screenshot",
+        "nativeExitCode": 0,
+        "passed": true
+      },
+      {
+        "step": "application_screenshot_receive",
+        "nativeExitCode": 0,
+        "passed": true
+      }
+    ],
+    "failure": null
+  },
+  "ui": {
+    "schemaVersion": 1,
+    "status": "passed",
+    "failureStage": null,
+    "checks": {
+      "decimalInputAccepted": true,
+      "unsavedDecimalPreservedAcrossNavigation": true,
+      "decimalSavedMessageConfirmed": true,
+      "decimalPersistedAfterProcessRestart": true,
+      "balanceTimestampChangedAfterNavigationWithoutManualRefresh": true,
+      "currentTabTapUpdatedBalanceTimestamp": true,
+      "originalRateAndIntervalRestored": true
+    },
+    "syntheticRate": "7.25",
+    "performedAt": "2026-10-08T23:40:48.2003594+08:00"
+  },
+  "nodeTests": {
+    "passed": 65,
+    "failed": 0,
+    "skipped": 0,
+    "log": "harmony/build-logs/decimal-auto-refresh-node-tests-20261008.txt"
+  }
+}

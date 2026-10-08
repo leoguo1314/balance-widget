@@ -1,0 +1,60 @@
+name: Harmony core checks
+on:
+  push:
+    paths:
+      - 'harmony/**'
+      - '.github/workflows/harmony-core.yml'
+  pull_request:
+    paths:
+      - 'harmony/**'
+      - '.github/workflows/harmony-core.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  logic:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check Harmony project references
+        run: node harmony/tools/check-project.mjs
+      - name: Test parsers, accounting, cards, signing and HTTP fixture
+        run: node --test harmony/tests/*.test.mjs harmony/tools/device-fixture-server.test.mjs
+      - name: Check whitespace
+        run: git diff --check
+      - name: Check Windows PowerShell syntax and native failure propagation
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'harmony/tools/build-hap.ps1'), [ref]$tokens, [ref]$parseErrors)
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          $definitions = $ast.FindAll({ param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+          }, $false)
+          foreach ($definition in $definitions) { Invoke-Expression $definition.Extent.Text }
+          $logFile = Join-Path $env:RUNNER_TEMP 'balance-build-wrapper-check.txt'
+          $nativeCommand = Join-Path $env:RUNNER_TEMP 'balance-build-wrapper-check.cmd'
+          @('@echo off', 'echo wrapper stdout', 'echo wrapper stderr 1>&2', 'exit /b %1') |
+            Set-Content -LiteralPath $nativeCommand -Encoding ASCII
+          Invoke-BuildTool -Name 'Native success' -Executable $nativeCommand -ToolArgs @('0')
+          $failureConfirmed = $false
+          try {
+            Invoke-BuildTool -Name 'Native failure' -Executable $nativeCommand -ToolArgs @('23')
+          } catch { $failureConfirmed = $_.Exception.Message -like '*exit code 23*' }
+          if (-not $failureConfirmed) { throw 'Native build failures must stop the wrapper.' }
+          # GitHub's PowerShell shell appends exit $LASTEXITCODE. The nonzero
+          # exit above is expected and has already been checked.
+          $global:LASTEXITCODE = 0
+          Write-Host 'PowerShell syntax and native exit handling passed. This is not an SDK build.'

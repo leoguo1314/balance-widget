@@ -1,0 +1,1 @@
+{"forms":[{"name":"BalanceCard","displayName":"$string:app_name","description":"$string:form_description","src":"./ets/widget/pages/BalanceCard.ets","uiSyntax":"arkts","window":{"designWidth":400,"autoDesignWidth":true},"colorMode":"auto","isDefault":true,"isDynamic":true,"updateEnabled":true,"updateDuration":1,"defaultDimension":"2*4","supportDimensions":["2*4"]}]}

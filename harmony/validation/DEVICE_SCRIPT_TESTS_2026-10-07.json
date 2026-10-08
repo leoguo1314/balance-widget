@@ -1,0 +1,85 @@
+{
+  "scope": "Offline synthetic script behavior only; no device was used and no real HAP was installed.",
+  "powerShell": "5.1.28000.3086",
+  "passed": 11,
+  "total": 11,
+  "checks": [
+    {
+      "case": "success",
+      "passed": true,
+      "exitCode": 0,
+      "failureStep": null,
+      "failureKind": null
+    },
+    {
+      "case": "existing_application",
+      "passed": true,
+      "exitCode": 0,
+      "failureStep": null,
+      "failureKind": null
+    },
+    {
+      "case": "api25",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "device_api",
+      "failureKind": "validation"
+    },
+    {
+      "case": "multiple",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "connected_targets",
+      "failureKind": "validation"
+    },
+    {
+      "case": "install_failed",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "install_hap",
+      "failureKind": "device_reported_failure"
+    },
+    {
+      "case": "install_no_confirmation",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "install_hap",
+      "failureKind": "success_text_missing"
+    },
+    {
+      "case": "install_native_failure",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "install_hap",
+      "failureKind": "native_exit"
+    },
+    {
+      "case": "wrong_bundle",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "installed_bundle",
+      "failureKind": "validation"
+    },
+    {
+      "case": "start_failed",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "start_ability",
+      "failureKind": "device_reported_failure"
+    },
+    {
+      "case": "layout_invisible",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "application_visible",
+      "failureKind": "application_not_visible"
+    },
+    {
+      "case": "layout_other_bundle",
+      "passed": true,
+      "exitCode": 1,
+      "failureStep": "application_visible",
+      "failureKind": "application_not_visible"
+    }
+  ]
+}
